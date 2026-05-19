@@ -103,9 +103,6 @@ done
 
 echo "Download process completed."
 
-Step1b: copy paste this shell code into a notepad and make changes to the path, folder’s name as per your system and choice and save that file as .sh. Next, open a terminal in RStudio and run this .sh file there by ‘bash .sh’. Once this is done, the ‘raw_geo_data’ folder will now have just 3 files. 
-
-
 #!/bin/bash
 
 # Base directory containing all GSM folders
