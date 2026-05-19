@@ -1,0 +1,2 @@
+# Analysis-of-Single-Cell-RNA-Sequencing-scRNA-seq-Data-from-GEO-Using-Seurat
+This project demonstrates a complete scRNA-seq analysis workflow using GEO dataset GSE279086, Bash, R, and Seurat. It covers data download, organization, quality control, normalization, feature selection, clustering, UMAP visualization, and reproducible GitHub documentation for learning and teaching single-cell analysis. 
