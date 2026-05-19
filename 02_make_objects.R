@@ -1,0 +1,64 @@
+```{r Load the packages}
+#install.packages("Seurat")
+library(Seurat)
+library(dplyr)
+library(tidyr)
+```
+```{r Prepare the seurat object}
+data_dir <- "raw_geo_data/"
+
+# List all GSM subdirectories
+samples <- list.dirs(data_dir, recursive = FALSE)
+
+seurat_list <- lapply(samples, function(sample_path) {
+  sample_name <- basename(sample_path)
+  message("Processing: ", sample_name)
+  
+  # Load data
+  counts <- Read10X(data.dir = sample_path)
+  
+  # Create Seurat object
+  seurat_obj <- CreateSeuratObject(counts = counts, project = sample_name,min.cells = 3,min.features = 200, assay = "RNA"
+  )
+  
+  # Add metadata
+  seurat_obj$sample <- sample_name
+
+  # Calculate QC metrics
+  seurat_obj[["percent.mt"]] <- PercentageFeatureSet(seurat_obj, pattern = "^MT-")
+  seurat_obj[["percent.rb"]] <- PercentageFeatureSet(seurat_obj, pattern = "^RP[SL]|RPLP")
+  
+  # Handle any missing values (just in case)
+  seurat_obj@meta.data <- seurat_obj@meta.data %>%
+    mutate(
+      percent.mt = replace_na(percent.mt, 0),
+      percent.rb = replace_na(percent.rb, 0)
+    )
+  
+  message(paste0("NaNs remaining in 'percent.mt': ", sum(is.nan(seurat_obj$percent.mt))))
+  message(paste0("NaNs remaining in 'percent.rb': ", sum(is.nan(seurat_obj$percent.rb))))
+  
+  return(seurat_obj)
+})
+
+names(seurat_list) <- basename(samples)
+names(seurat_list)
+```
+```{r Save individual samples into a seurat object}
+output_dir <- file.path("input")
+
+if (!dir.exists(output_dir)) {
+  dir.create(output_dir, recursive = TRUE)
+}
+
+# Save each Seurat object
+for (i in seq_along(seurat_list)) {
+  sample_name <- seurat_list[[i]]@project.name
+  save_path <- file.path(output_dir, paste0(sample_name, "_seurat.rds"))
+  
+  message("Saving: ", sample_name, " -> ", save_path)
+  saveRDS(seurat_list[[i]], file = save_path)
+}
+
+message("All Seurat objects saved successfully in: ", output_dir)
+```
